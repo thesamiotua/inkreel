@@ -1,0 +1,10 @@
+{
+  "description": "Inkreel connects vloggers and writers in a warm editorial space, offering a mixed feed of engaging articles and videos across various categories.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
