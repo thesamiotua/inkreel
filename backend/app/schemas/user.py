@@ -19,4 +19,8 @@ class UserRead(BaseModel):
     avatar_url: str | None
     banner_url: str | None
     created_at: datetime
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
     
