@@ -6,8 +6,9 @@ from app.models.category import Category
 
 
 CATEGORIES = [
-    ("Travel","travel"),
-    ("Tech", "food"),
+    ("Travel", "travel"),
+    ("Food", "food"),
+    ("Tech", "tech"),
     ("Lifestyle", "lifestyle"),
     ("Study", "study"),
 ]
@@ -20,9 +21,10 @@ def seed() -> None:
             if existing is None:
                 db.add(Category(name=name, slug=slug))
 
-        db.commit
+        db.commit()
     finally:
         db.close()
 
-if __name__=="__main__":
+if __name__ == "__main__":
     seed()
+    
