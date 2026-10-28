@@ -48,4 +48,6 @@ class Post(Base):
         DateTime(timezone=True), default=None
     )
 
-    author: Mapped["User"] = relationship()
+    author: Mapped["User"] = relationship(lazy="joined")
+
+    

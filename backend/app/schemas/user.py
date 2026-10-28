@@ -25,7 +25,7 @@ class Token(BaseModel):
     token_type: str = "bearer"
 
 
-class userPublic(BaseModel):
+class UserPublic(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -36,11 +36,11 @@ class userPublic(BaseModel):
     banner_url: str | None
     created_at: datetime
 
-class userUpdate(BaseModel):
+class UserUpdate(BaseModel):
     display_name: str | None = Field(default=None , min_length=1,max_length=80)
     username: str | None = Field(
         default=None, min_length=3, max_length=30,pattern=r"^[a-zA-Z0-9_]+$"
     )
     bio: str | None = Field(default=None, max_length=160)
-    
+
     
