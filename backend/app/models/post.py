@@ -50,4 +50,8 @@ class Post(Base):
 
     author: Mapped["User"] = relationship(lazy="joined")
 
-    
+@property
+def  excerpt(self) -> str:
+    text = " ".join(self.body.split())
+    return text [:160] + ("..." if len(text) > 160 else "")
+

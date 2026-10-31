@@ -44,3 +44,25 @@ class PostRead(BaseModel):
     updated_at: datetime
     published_at: datetime | None
     author: UserPublic
+
+class PostSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    type: PostType
+    title: str
+    excerpt: str
+    category_id: int | None
+    cover_image_url: str | None
+    thumbnail_url: str | None
+    duration_seconds: int | None
+    reading_minutes: int | None
+    published_at: datetime | None
+    author: UserPublic
+
+class PostPage(BaseModel):
+    items: list[PostSummary]
+    total: int
+    page: int
+    page_size: int
+    

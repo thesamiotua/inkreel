@@ -2,15 +2,17 @@ import math
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query,status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
+
 
 from app.auth import get_current_user
 from app.database import get_db
 from app.models.category import Category
 from app.models.post import Post, PostStatus, PostType
 from app.models.user import User
-from app.schemas.post import PostCreate, PostRead, PostUpdate
+from app.schemas.post import PostCreate, PostPage, PostRead, PostUpdate
+
 
 router = APIRouter(prefix="/posts", tags=["posts"])
 
@@ -49,6 +51,41 @@ def create_post(
     db.commit()
     db.refresh(post)
     return post
+
+
+@router.get("", response_model=PostPage)
+def list_post(
+    post_type: PostType | None = Query(default=None, alias="type"),
+    category: str | None = Query(default=None, max_length=50),
+    q: str | None = Query(default=None, max_length=100),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=12, ge=1, le=50),
+    db: Session = Depends(get_db)
+
+):
+    filters = [Post.status == PostStatus.published]
+
+    if post_type is not None:
+        filters.append(Post.type == post_type)
+    if category is not None:
+        found = db.scalar(select (category).where(Category.slug == category.lower()))
+        if found is None:
+            return {"items":[], "total":0, "page": page, "page_size": page_size}
+        filters.append(Post.category_id == found.id)
+    if q:
+        filters.append(Post.title.ilike(f"%{q}%"))
+    total = db.scalar(select(func.count(Post.id)).where(*filters))
+    posts = db.scalars(
+        select(Post)
+        .where(*filters)
+        .order_by(Post.published_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all
+
+    return {"items": posts, "total": total, "page":page, "page_size": page_size}    
+
+
 
 @router.get("/mine", response_model=list[PostRead])
 def list_my_posts(
