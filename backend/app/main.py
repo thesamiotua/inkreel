@@ -22,3 +22,4 @@ def health():
 def health_db(db: Session = Depends(get_db)):
     db.execute(text("select 1"))
     return {"database": "okay"}
+ 

@@ -11,3 +11,4 @@ router = APIRouter(prefix="/categories", tags=["categories"])
 @router.get("",response_model=list[CategoryRead])
 def list_categories(db: Session = Depends(get_db)):
     return db.scalars(select(Category).order_by(Category.name)).all()
+
