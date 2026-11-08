@@ -6,12 +6,13 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 
-from app.auth import get_current_user
+from app.auth import get_current_user, get_optional_user
 from app.database import get_db
 from app.models.category import Category
 from app.models.post import Post, PostStatus, PostType
+from app.models.post_view import PostView
 from app.models.user import User
-from app.schemas.post import PostCreate, PostPage, PostRead, PostUpdate
+from app.schemas.post import PostCreate, PostPage, PostRead, PostUpdate, PostDetail
 
 
 router = APIRouter(prefix="/posts", tags=["posts"])
@@ -101,6 +102,38 @@ def list_my_posts(
     if status_filter is not None:
         query = query.where(Post.status == status_filter)
     return db.scalars(query).all()
+
+@router.get("/{post_id}", response_model=PostDetail)
+def get_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+    current_user: User | None = Depends(get_optional_user),
+):
+    post = db.get(Post, post_id)
+    if post is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Post not found")
+    
+    is_author = current_user is not None and current_user.id == post.author_id
+
+    if post.status != PostStatus.published and not is_author:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Post not found")
+
+    if post.status == PostStatus.published and not is_author:
+        db.add(
+            PostView(
+                post_id=post.id,
+                viewer_id=current_user.id if current_user else None,
+            )
+        )
+        db.commit()
+
+    view_count = db.scalar(
+        select(func.count(PostView.id)).where(PostView.post_id == post.id)  
+    )
+    detail = PostDetail.model_validate(post)
+    detail.view_count = view_count
+    return detail
+
 
 
 @router.patch("/{post_id}", response_model=PostRead)

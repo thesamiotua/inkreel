@@ -65,4 +65,6 @@ class PostPage(BaseModel):
     total: int
     page: int
     page_size: int
-    
+
+class PostDetail(PostRead):
+    view_count: int = 0
